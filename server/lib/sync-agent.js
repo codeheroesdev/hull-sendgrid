@@ -39,7 +39,7 @@ export default class SyncAgent {
    */
   sync() {
     return this.webhookSubscriber.subscribe()
-      .then(() => this.segmentMapper.sync(this.synchronizedSegments));
+      .then(() => this.segmentMapper.sync(this.synchronizedSegments))
       .then(() => this.traitMapper.sync(this.synchronized_attributes));
   }
 

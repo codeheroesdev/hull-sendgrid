@@ -4,6 +4,10 @@ import Hull from "hull";
 import server from "./server";
 import serviceMiddleware from "./lib/service-middleware";
 
+if (process.env.LOG_LEVEL) {
+  Hull.logger.transports.console.level = process.env.LOG_LEVEL;
+}
+
 const app = express();
 const connector = new Hull.Connector({
   hostSecret: process.env.SECRET || "1234",

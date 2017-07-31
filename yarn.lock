@@ -3347,7 +3347,7 @@ mimic-fn@^1.0.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/mimic-fn/-/mimic-fn-1.1.0.tgz#e667783d92e89dbd342818b5230b9d62a672ad18"
 
-mini-application@^1.0.4:
+mini-application@^1.0.4, mini-application@^1.0.5:
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/mini-application/-/mini-application-1.0.5.tgz#3f3f39d34dba0bca4212dc11cda71c40c6d1207e"
   dependencies:
@@ -3365,7 +3365,7 @@ mini-application@^1.0.4:
     faker "^4.1.0"
     moment "^2.18.1"
 
-minihull@^2.0.0:
+minihull@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/minihull/-/minihull-2.0.1.tgz#38c4d2ef5c6f48f50fcb3d26910cbc3b36368d4d"
   dependencies:

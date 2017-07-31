@@ -1,11 +1,14 @@
 import express from "express";
 import { notifHandler } from "hull/lib/utils";
 
-import { userHandler, webhookHandler, adminHandler } from "./handler";
+import { userHandler, webhookHandler, adminHandler, commandHandler } from "./handler";
 
 export default function server(app: express) {
   app.use("/notify", notifHandler({
     handlers: {
+      "ship:update": commandHandler,
+      "segment:update": commandHandler,
+      "segment:delete": commandHandler,
       "user:update": userHandler
     }
   }));

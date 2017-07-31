@@ -17,7 +17,7 @@ export default class TraitMapper {
   constructor(ctx: Context, sendgridClient) {
     this.sendgridClient = sendgridClient;
 
-    this.mapping = _.get(ctx, "ship.private_settings.traits_mapping", {});
+    this.mapping = _.get(ctx, "ship.private_settings.traits_mapping", []);
     this.originalMapping = _.cloneDeep(this.mapping);
     this.helpers = ctx.helpers;
   }

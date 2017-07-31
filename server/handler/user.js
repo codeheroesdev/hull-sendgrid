@@ -1,5 +1,5 @@
 // @flow
-
+import _ from "lodash";
 import Message from "../interface/message";
 import Context from "../interface/context";
 
@@ -10,5 +10,11 @@ import Context from "../interface/context";
  * @return {Promise}
  */
 export default function userHandler(ctx: Context, messages: Array<Message>) {
-  const { is_batch: isBatch } = ctx.options;
+  const isBatch = _.has(ctx.options, "format") && _.has(ctx.options, "url");
+  const { syncAgent } = ctx.service;
+
+  // TODO filtering
+  console.log({ isBatch });
+  // const users = messages.map(m => m.user);
+  return syncAgent.sendNotifications(messages);
 }

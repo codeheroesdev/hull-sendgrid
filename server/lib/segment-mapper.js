@@ -22,8 +22,12 @@ export default class SegmentMapper {
     this.helpers = ctx.helpers;
   }
 
+  getListId(segmentId) {
+    return this.mapping[segmentId];
+  }
+
   sync(segments: Array<Object> = []) {
-    const segmentsAlreadyMapped = this.mapping.map(id => ({ id }));
+    const segmentsAlreadyMapped = _.map(this.mapping, (listId, id) => ({ id }));
     const newSegments = _.differenceBy(segments, segmentsAlreadyMapped, "id");
     const oldSegments = _.differenceBy(segmentsAlreadyMapped, segments, "id");
 
@@ -39,11 +43,28 @@ export default class SegmentMapper {
   }
 
   createObject(segment: Object) {
-    return this.sendgridClient.post("/");
+    return this.sendgridClient.request("post", "/contactdb/lists")
+      .send({
+        name: `[Hull] ${segment.name}`
+      })
+      .then((res) => {
+        console.log("SEGMET TESDAF@$@@#$!@$@#$!@#", res);
+        this.mapping[segment.id] = res.body.id;
+        return res.body.id;
+      })
+      .catch((err) => {
+        if (err.status === 400) {
+          if (_.get(err, "response.body.errors[0].message") === "This list name is already in use. Please choose a new, unique name.") {
+
+          }
+        }
+      });
   }
 
   deleteObject(segment: Object) {
-    return this.sendgridClient.delete("/");
+    console.log("deleteObject", { segment });
+    return Promise.resolve();
+    // return this.sendgridClient.delete("/");
   }
 
   persist() {

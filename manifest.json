@@ -1,5 +1,5 @@
 {
-  "name": "hull-sendgrid",
+  "name": "Sendgrid",
   "description": "Sync users with Sendgrid",
   "picture": "picture.png",
   "version": "0.1.0",

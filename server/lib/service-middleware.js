@@ -1,7 +1,6 @@
 import SyncAgent from "./sync-agent";
 
 export default function factoryServiceMiddleware() {
-  console.log("factoryServiceMiddleware");
   /**
    * serviceMiddleware injects custom classes to req.hull context object
    * @param  {Request}  req

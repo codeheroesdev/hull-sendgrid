@@ -11,11 +11,13 @@ export default class SendgridClient {
   apiUrl: String;
   apiKey: String;
   client: Hull;
+  metric: Object;
 
   constructor(ctx: Object) {
     this.apiUrl = process.env.OVERRIDE_SENDGRID_URL || "https://api.sendgrid.com/v3";
     this.apiKey = _.get(ctx.ship, "private_settings.api_key");
     this.client = ctx.client;
+    this.metric = ctx.metric;
   }
 
   isConfigured() {
@@ -30,7 +32,7 @@ export default class SendgridClient {
       .use(superagentPrefixPlugin(this.apiUrl))
       .use(superagentPromisePlugin)
       .on("request", (reqData) => {
-        this.client.logger("connector.api.request", reqData.method, reqData.url);
+        this.client.logger.debug("connector.api.request", reqData.method, reqData.url);
       })
       .on("response", (res) => {
         const limit = _.get(res.header, "x-ratelimit-limit");

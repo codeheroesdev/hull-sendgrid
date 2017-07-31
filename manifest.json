@@ -1,0 +1,67 @@
+{
+  "name": "hull-sendgrid",
+  "description": "Sync users with Sendgrid",
+  "picture": "picture.png",
+  "version": "0.1.0",
+  "tags": [
+    "outgoing",
+    "batch",
+    "oneColumn"
+  ],
+  "private_settings": [
+    {
+      "name": "credentials_title",
+      "title": "Credentials",
+      "format": "title",
+      "type": "string"
+    },
+    {
+      "name": "api_key",
+      "title": "Sendgrid API Key",
+      "type": "string"
+    },
+    {
+      "name": "configuration_title",
+      "title": "Configuration",
+      "format": "title",
+      "type": "string"
+    },
+    {
+      "name": "synchronized_segments",
+      "title": "Segments",
+      "description": "Send users only if they belong to one of these segments",
+      "type": "array",
+      "default": [],
+      "format": "segment"
+    },
+    {
+      "name": "enable_user_deletion",
+      "title": "Enable User Deletion",
+      "description": "If this field is enabled, users who don't match the Segments above will be DELETED from Sendgrid. Otherwise they will be ignored",
+      "type": "boolean",
+      "default": false
+    },
+    {
+      "name": "data_title",
+      "title": "Data Mapping",
+      "format": "title",
+      "type": "string"
+    },
+    {
+      "name": "synchronized_attributes",
+      "title": "Send Attributes to Sendgrid",
+      "description": "See documentation for default attribtues list",
+      "type": "array",
+      "format": "trait"
+    }
+  ],
+  "resources": [],
+  "readme": "readme.md",
+  "admin": "admin",
+  "ui": false,
+  "subscriptions": [
+    {
+      "url": "/notify"
+    }
+  ]
+}

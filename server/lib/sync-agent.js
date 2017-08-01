@@ -69,7 +69,9 @@ export default class SyncAgent {
    * @param  {Array<Object>} users
    * @return {Promise}
    */
-  sendUsers(users: Array<Object>) {}
+  sendUsers(users: Array<Object>) {
+
+  }
 
   sendNotifications(messages: Array<Object>) {
     const usersAlreadyAdded = messages.filter((message) => message.user["traits_sendgrid/id"]);

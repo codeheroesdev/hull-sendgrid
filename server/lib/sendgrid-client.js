@@ -1,4 +1,5 @@
 // @flow
+import Hull from "hull";
 import _ from "lodash";
 import superagent from "superagent";
 import superagentPrefixPlugin from "superagent-prefix";
@@ -11,11 +12,13 @@ export default class SendgridClient {
   apiUrl: String;
   apiKey: String;
   client: Hull;
+  metric: Object;
 
   constructor(ctx: Object) {
     this.apiUrl = process.env.OVERRIDE_SENDGRID_URL || "https://api.sendgrid.com/v3";
     this.apiKey = _.get(ctx.ship, "private_settings.api_key");
     this.client = ctx.client;
+    this.metric = ctx.metric;
   }
 
   isConfigured() {
@@ -30,7 +33,7 @@ export default class SendgridClient {
       .use(superagentPrefixPlugin(this.apiUrl))
       .use(superagentPromisePlugin)
       .on("request", (reqData) => {
-        this.client.logger("connector.api.request", reqData.method, reqData.url);
+        this.client.logger.debug("connector.api.request", reqData.method, reqData.url);
       })
       .on("response", (res) => {
         const limit = _.get(res.header, "x-ratelimit-limit");
@@ -47,7 +50,17 @@ export default class SendgridClient {
           this.metric.value("ship.service_api.limit", limit);
         }
       })
-      .set("Authorization", `Bearer ${this.apiKey}`);
+      .set("Authorization", `Bearer ${this.apiKey}`)
+      .set("Content-Type", "application/json");
+  }
+
+  post(url, body) {
+    return this.request("post", url)
+      .send(body);
+  }
+
+  delete(url) {
+    return this.request("delete", url);
   }
 }
 

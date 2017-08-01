@@ -1,4 +1,5 @@
 import { Client } from "hull";
+import _ from "lodash";
 import SendgridClient from "./sendgrid-client";
 import SegmentMapper from "./segment-mapper";
 import TraitMapper from "./trait-mapper";
@@ -21,8 +22,8 @@ export default class SyncAgent {
     this.segmentMapper = new SegmentMapper(ctx, this.sendgridClient);
     this.traitMapper = new TraitMapper(ctx, this.sendgridClient);
 
-    this.synchronizedSegments = ctx.ship.private_settings.synchronized_segments;
-    this.synchronizedTraits = ctx.ship.private_settings.synchronized_attributes;
+    this.synchronizedSegments = _.get(ctx, "ship.private_settings.synchronized_segments");
+    this.synchronizedTraits = _.get(ctx, "ship.private_settings.synchronized_attributes");
   }
 
   /**
@@ -40,7 +41,7 @@ export default class SyncAgent {
   sync() {
     return this.webhookSubscriber.subscribe()
       .then(() => this.segmentMapper.sync(this.synchronizedSegments))
-      .then(() => this.traitMapper.sync(this.synchronized_attributes));
+      .then(() => this.traitMapper.sync(this.synchronizedTraits));
   }
 
   /**
@@ -48,6 +49,7 @@ export default class SyncAgent {
    * @return {Promise}
    */
   sendUsers(users: Array<Object>) {
+
   }
 
   saveUsers(users: Array<Object>) {

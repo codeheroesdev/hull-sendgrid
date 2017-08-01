@@ -26,5 +26,23 @@ export default function server(app: express) {
 
   app.get("/admin", adminHandler);
 
+
+  app.use((req, res, next) => {
+    res.setHeader("Access-Control-Allow-Origin", "https://dashboard.hullbeta.io");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
+    res.setHeader("Access-Control-Allow-Headers", "X-Requested-With,content-type");
+    res.setHeader("Access-Control-Allow-Credentials", true);
+    next();
+  });
+
+  app.use("/schema/custom_fields", (req, res) => {
+    res.send({
+      options: [
+        { value: "sendgrid_id2", label: "sendgrid_id2" },
+        { value: "email2", label: "email2" }
+      ]
+    });
+  });
+
   return app;
 }

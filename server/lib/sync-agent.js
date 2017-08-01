@@ -29,8 +29,8 @@ export default class SyncAgent {
     this.traitMapper = new TraitMapper(ctx, this.sendgridClient);
     this.userMapper = new UserMapper(ctx);
 
-    this.synchronizedSegments = ctx.ship.private_settings.synchronized_segments;
-    this.synchronizedTraits = ctx.ship.private_settings.synchronized_attributes;
+    this.synchronizedSegments = _.get(ctx, "ship.private_settings.synchronized_segments");
+    this.synchronizedTraits = _.get(ctx, "ship.private_settings.synchronized_attributes");
   }
 
   /**
@@ -69,6 +69,8 @@ export default class SyncAgent {
    * @param  {Array<Object>} users
    * @return {Promise}
    */
+  sendUsers(users: Array<Object>) {}
+
   sendNotifications(messages: Array<Object>) {
     const usersAlreadyAdded = messages.filter((message) => message.user["traits_sendgrid/id"]);
     const usersToAdd = messages.filter((message) => !message.user["traits_sendgrid/id"]);

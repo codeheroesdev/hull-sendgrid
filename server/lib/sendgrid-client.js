@@ -1,4 +1,5 @@
 // @flow
+import Hull from "hull";
 import _ from "lodash";
 import superagent from "superagent";
 import superagentPrefixPlugin from "superagent-prefix";
@@ -49,7 +50,17 @@ export default class SendgridClient {
           this.metric.value("ship.service_api.limit", limit);
         }
       })
-      .set("Authorization", `Bearer ${this.apiKey}`);
+      .set("Authorization", `Bearer ${this.apiKey}`)
+      .set("Content-Type", "application/json");
+  }
+
+  post(url, body) {
+    return this.request("post", url)
+      .send(body);
+  }
+
+  delete(url) {
+    return this.request("delete", url);
   }
 }
 

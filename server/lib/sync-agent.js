@@ -73,6 +73,7 @@ export default class SyncAgent {
     return this.sendgridClient.request("post", "/contactdb/recipients")
       .send(contacts)
       .then((res) => {
+        console.log("SENDGRID", res);
         const successEmails = res.body.persisted_recipients.map(recipient => ({ user: { email: Buffer.from(recipient, "base64").toString() } }));
         const successUsers = _.intersectionBy(messages, successEmails, "user.email");
         const failedUsers = _.flatten(res.body.errors.map(({ error_indices, message }) => {
@@ -82,6 +83,12 @@ export default class SyncAgent {
               return false;
             }
             this.client.asUser(user).logger.error("outoing.user.error", { errors: message });
+            if (message.match("The email address you added is invalid")) {
+              this.client.asUser(user).traits({
+                "sendgrid/invalid_reason": message,
+                "sendgrid/invalid_at": new Date(),
+              });
+            }
             return true;
           });
         }));
@@ -113,14 +120,6 @@ export default class SyncAgent {
             });
         }));
       });
-  }
-
-  saveUsers(users: Array<Object>) {
-
-  }
-
-  saveEvents(events: Array<Object>) {
-
   }
 
   _encodeBase64(string) {

@@ -1,6 +1,7 @@
 // @flow
 import _ from "lodash";
 import { Request, Response } from "express";
+import Promise from "bluebird";
 
 /**
  * @param  {Request} req
@@ -12,20 +13,16 @@ export default function fetchAll(req: Request, res: Response) {
   const { syncAgent } = req.hull.service;
 
   function fetch() {
-    syncAgent.fetchRecipients({ page, pageSize })
+    return syncAgent.fetchRecipients({ page, pageSize })
       .then((recipients) => {
-        if (recipients.length > 0) {
+        if (recipients && recipients.length > 0) {
           _.map(recipients, (recipient) => {
             return syncAgent.saveRecipient(recipient);
           });
-        }
-
-        if (recipients.length > 0) {
           page += 1;
-          setTimeout(() => {
-            return fetch();
-          }, 1000);
+          return fetch();
         }
+        return Promise.resolve();
       });
   }
 

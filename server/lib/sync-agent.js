@@ -61,12 +61,11 @@ export default class SyncAgent {
     const usersAlreadyAdded = messages.filter((message) => message.user["traits_sendgrid/id"]);
     const usersToAdd = messages.filter((message) => {
       if (userDeletionEnabled && _.intersectionBy(message.segments, this.synchronizedSegments, "id").length === 0) {
-        this.client.asUser(message.user).logger.info("outgoing.user.skip", { reason: "" });
         return false;
       }
 
       if (!this.isBatch && _.intersectionBy(message.segments, this.synchronizedSegments, "id").length === 0) {
-        this.client.asUser(message.user).logger.info("outgoing.user.skip", { reason: "" });
+        this.client.asUser(message.user).logger.info("outgoing.user.skip", { reason: "non matching the segment filter" });
         return false;
       }
       return !message.user["traits_sendgrid/id"];
@@ -75,8 +74,13 @@ export default class SyncAgent {
 
     return this.sendgridClient.post("/contactdb/recipients", contacts)
       .then((res) => {
-        const successEmails = res.body.persisted_recipients.map(recipient => ({ user: { email: Buffer.from(recipient, "base64").toString() } }));
-        const successUsers = _.intersectionBy(messages, successEmails, "user.email");
+        const successUsers = res.body.persisted_recipients.map(recipient => {
+          const email = Buffer.from(recipient, "base64").toString();
+          const message = _.find(messages, { user: { email } });
+          message.user["traits_sendgrid/id"] = recipient;
+          return message;
+        });
+
         const failedUsers = _.flatten(_.get(res, "body.errors", []).map(({ error_indices, message }) => {
           const usersWithError = this._intersectionIndex(usersToAdd, error_indices);
           return usersWithError.filter(({ user }) => {
@@ -99,7 +103,10 @@ export default class SyncAgent {
           return this.client.asUser(user).logger.error("outgoing.user.error", { errors: "Unknown error" });
         });
         successUsers.map(({ user }) => {
-          return this.client.asUser(user).logger.info("outgoing.user.success");
+          this.client.asUser(user).logger.info("outgoing.user.success");
+          return this.client.asUser(user).traits({
+            "sendgrid/id": user["traits_sendgrid/id"]
+          });
         });
         return successUsers;
       })
@@ -116,23 +123,22 @@ export default class SyncAgent {
         });
         const payload = usersToDelete.map(message => {
           this.client.asUser(message.user).logger.info("outgoing.user.delete");
-          return this._encodeBase64(message.user.email);
+          return message.user["traits_sendgrid/id"];
         });
-        return this.sendgridClient("delete", "/contactdb/recipients")
-          .send(payload)
+        return this.sendgridClient.delete("/contactdb/recipients", payload)
           .then(() => {
             return usersToAddToLists;
           });
       })
       .then((usersToAddToLists) => {
-        const operations = _.reduce(usersToAddToLists, (acc, user) => {
-          _.map(user.segments, (segment) => {
+        const operations = _.reduce(usersToAddToLists, (acc, message) => {
+          _.map(message.segments, (segment) => {
             const listId = this.segmentMapper.getListId(segment.id);
             if (!listId) {
               return acc;
             }
             acc[listId] = acc[listId] || [];
-            const encodedEmail = this._encodeBase64(user.user.email);
+            const encodedEmail = message.user["traits_sendgrid/id"];
             return acc[listId].push(encodedEmail);
           });
           return acc;
@@ -142,7 +148,12 @@ export default class SyncAgent {
           return this.sendgridClient.post(`/contactdb/lists/${listId}/recipients`, list)
             .then(() => {
               _.map(usersToAddToLists, (message) => {
-                this.client.asUser(message.user).logger("outgoing.user.success", { message: "added to list" });
+                this.client.asUser(message.user).logger.info("outgoing.user.success", { message: "added to list" });
+              });
+            })
+            .catch((err) => {
+              _.map(usersToAddToLists, (message) => {
+                this.client.asUser(message.user).logger.error("outgoing.user.error", { message: err.message });
               });
             });
         }));

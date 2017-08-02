@@ -88,8 +88,9 @@ describe("Clearbit API errors", function test() {
       .reply(200);
 
     minihull.on("incoming.request@/api/v1/firehose", (req) => {
-      expect(req.body.batch.length).to.equal(3);
+      expect(req.body.batch.length).to.equal(6);
       expect(req.body.batch[0].body["sendgrid/invalid_reason"]).to.equal("The email address you added is invalid. Please check it and try again.");
+      expect(req.body.batch[5].body["sendgrid/id"]).to.equal("YzVAZm9vLmJhcg==");
       done();
     });
 

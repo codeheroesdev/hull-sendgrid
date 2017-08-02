@@ -14,7 +14,7 @@ const connector = new Hull.Connector({
   hostSecret: process.env.SECRET || "1234",
   port: process.env.PORT || 8082,
 });
-const bottleneckCluster = new Cluster(2, 1000);
+const bottleneckCluster = new Cluster(1, 2000);
 
 connector.use(serviceMiddleware(bottleneckCluster));
 connector.setupApp(app);

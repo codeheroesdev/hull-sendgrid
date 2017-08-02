@@ -8,7 +8,7 @@ import _ from "lodash";
  */
 export default function adminHandler(req, res) {
   const { syncAgent } = req.hull.service;
-
+  console.log(req.hull.token);
   if (syncAgent.isConfigured()) {
     return res.render("segments.html", {
       lists: [{ id: 1, name: "test", recipient_count: 100 }],

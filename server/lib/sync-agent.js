@@ -65,14 +65,6 @@ export default class SyncAgent {
     // if (isBatch && userDeletionEnabled)
   }
 
-  /**
-   * @param  {Array<Object>} users
-   * @return {Promise}
-   */
-  sendUsers(users: Array<Object>) {
-
-  }
-
   sendNotifications(messages: Array<Object>) {
     const usersAlreadyAdded = messages.filter((message) => message.user["traits_sendgrid/id"]);
     const usersToAdd = messages.filter((message) => !message.user["traits_sendgrid/id"]);
@@ -107,12 +99,19 @@ export default class SyncAgent {
           _.map(user.segments, (segment) => {
             const listId = this.segmentMapper.getListId(segment.id);
             acc[listId] = acc[listId] || [];
-            acc[listId].push(user);
+            const encodedEmail = this._encodeBase64(user.user.email);
+            acc[listId].push(encodedEmail);
           });
           return acc;
         }, {});
 
-        Promise.map(operations);
+        return Promise.all(_.map(operations, (list, listId) => {
+          return this.sendgridClient.request("post", `/contactdb/lists/${listId}/recipients`)
+            .send(list)
+            .then((response) => {
+              console.log(response.body, response.status);
+            });
+        }));
       });
   }
 
@@ -122,6 +121,10 @@ export default class SyncAgent {
 
   saveEvents(events: Array<Object>) {
 
+  }
+
+  _encodeBase64(string) {
+    return Buffer.from(string).toString("base64");
   }
 
   _intersectionIndex(array, indices) {

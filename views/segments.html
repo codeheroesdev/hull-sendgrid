@@ -7,6 +7,11 @@
     <div class="row">
       <div class="col-sm-12">
         <div class="panel panel-default mt-1">
+            <div class="panel-body text-center">
+                Webhooks Endpoint that should be configured at Sendgrid panel <br/>
+                <input class="form-control mb-1" value="https://<%= hostname %>/webhook/?token=<%= token %>" />
+            </div>
+
           <% if (segmentsFromSendgrid && _.size(segmentsFromSendgrid)) { -%>
             <div class="panel-heading">
               <h5 class='mt-05 mb-05 text-accented uppercase'>Managed Lists</h5>
@@ -37,33 +42,6 @@
               </tbody>
             </table>
 
-            <% } else { -%>
-
-              <% if (!segments || !segments.length) { -%>
-                <div class="panel-body text-center">
-                  <h1 class="condensed mt-0 mb-0">No segment found</h1>
-                  <p>First, go to the Users tab and create some segments, then specify which segments you want to send to Facebook from the Settings tab</p>
-                  <div class="mt-2">
-                    <div class="mb-2 col-md-2 col-md-offset-5">
-                      <img src="https://dd04rofzygnm0.cloudfront.net/releases/master/865f04865d2448286626bac92c518a8f8ea8bafe/images/blankslate/avatar.svg" class="img-responsive">
-                    </div>
-                  </div>
-                </div>
-              <% } else if (!synchronizedSegments || !synchronizedSegments.length) { -%>
-                <div class="panel-body text-center">
-                  <h1 class="condensed mt-0 mb-0">No segments set to synchronize</h1>
-                  <p>Go to settings to pick some segments to be synchronized</p>
-                  <div class="mt-2">
-                    <div class="mb-2 col-md-2 col-md-offset-5">
-                      <img src="https://dd04rofzygnm0.cloudfront.net/releases/master/865f04865d2448286626bac92c518a8f8ea8bafe/images/blankslate/avatar.svg" class="img-responsive">
-                    </div>
-                  </div>
-                </div>
-              <% } else { -%>
-                <div class="panel-body text-center">
-                  <h1 class="condensed mt-0 mb-0">Your segments are just being synchronized</h1>
-                </div>
-              <% } -%>
             <% } -%>
         </div>
       </div>

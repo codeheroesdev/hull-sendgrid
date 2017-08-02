@@ -9,7 +9,6 @@ import { Request, Response } from "express";
  */
 export default function adminHandler(req: Request, res: Response) {
   const { syncAgent } = req.hull.service;
-  console.log(req.hull.token);
 
   if (syncAgent.isConfigured()) {
     const segmentsFromSendgrid = syncAgent.segmentMapper.getObjects().then(response => response.lists.filter(list =>
@@ -19,10 +18,13 @@ export default function adminHandler(req: Request, res: Response) {
     return segmentsFromSendgrid.then(resultList => {
       res.render("segments.html", {
         segmentsFromSendgrid: resultList,
-        segments: req.hull.segments,
-        synchronizedSegments: resultList,
-        _
+        _,
+        hostname: req.hull.hostname,
+        token: req.hull.token
       });
+    })
+    .catch(() => {
+      res.render("not-configured.html");
     });
   }
 

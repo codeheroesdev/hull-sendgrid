@@ -28,7 +28,7 @@ export default class SegmentMapper {
   }
 
   getSyncedListIds() {
-    return Object.values(this.mapping);
+    return _.values(this.mapping);
   }
 
   sync(segments: Array<Object> = []) {

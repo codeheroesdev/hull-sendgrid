@@ -63,7 +63,7 @@ export default class SendgridClient {
     return this.request("delete", url);
   }
 
-  get(url) {
+  get(url: string) {
     return this.request("get", url);
   }
 }

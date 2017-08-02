@@ -6,7 +6,7 @@ const serviceMiddleware = require("../../../server/lib/service-middleware").defa
 
 module.exports = function bootstrap(port) {
   const app = express();
-  const connector = new Connector({ hostSecret: "1234", port, clientConfig: { protocol: "http" } });
+  const connector = new Connector({ hostSecret: "1234", port, clientConfig: { protocol: "http", firehoseUrl: "firehose" } });
   connector.use(serviceMiddleware());
   connector.setupApp(app);
   server(app);

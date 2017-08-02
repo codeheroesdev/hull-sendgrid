@@ -14,6 +14,7 @@ export default class SegmentMapper {
 
   sendgridClient: Object;
   helpers: Object;
+  cache: Object;
 
   constructor(ctx: Context, sendgridClient: SendgridClient) {
     this.sendgridClient = sendgridClient;
@@ -21,6 +22,7 @@ export default class SegmentMapper {
     this.mapping = _.get(ctx, "ship.private_settings.segments_mapping", {}) || {};
     this.originalMapping = _.cloneDeep(this.mapping);
     this.helpers = ctx.helpers;
+    this.cache = ctx.cache;
   }
 
   getListId(segmentId: String) {
@@ -32,7 +34,9 @@ export default class SegmentMapper {
   }
 
   sync(segments: Array<Object> = []) {
-    return this.sendgridClient.request("get", "/contactdb/lists")
+    return this.cache.wrap("lists", () => {
+      return this.sendgridClient.request("get", "/contactdb/lists");
+    })
       .then((res) => {
         _.map(res.body.lists, (list) => {
           if (list.name.match("[Hull]")) {

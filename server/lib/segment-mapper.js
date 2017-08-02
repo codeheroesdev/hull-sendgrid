@@ -26,6 +26,10 @@ export default class SegmentMapper {
     return this.mapping[segmentId];
   }
 
+  getSyncedListIds() {
+    return Object.values(this.mapping);
+  }
+
   sync(segments: Array<Object> = []) {
     const segmentsAlreadyMapped = _.map(this.mapping, (listId, id) => ({ id }));
     const newSegments = _.differenceBy(segments, segmentsAlreadyMapped, "id");
@@ -43,12 +47,10 @@ export default class SegmentMapper {
   }
 
   createObject(segment: Object) {
-    return this.sendgridClient.request("post", "/contactdb/lists")
-      .send({
-        name: `[Hull] ${segment.name}`
-      })
+    return this.sendgridClient.post("/contactdb/lists", {
+      name: `[Hull] ${segment.name}`
+    })
       .then((res) => {
-        console.log("SEGMET TESDAF@$@@#$!@$@#$!@#", res);
         this.mapping[segment.id] = res.body.id;
         return res.body.id;
       })
@@ -65,6 +67,12 @@ export default class SegmentMapper {
     console.log("deleteObject", { segment });
     return Promise.resolve();
     // return this.sendgridClient.delete("/");
+  }
+
+  getObjects() {
+    return this.sendgridClient.get("/contactdb/lists").then(res => {
+      return res.body;
+    });
   }
 
   persist() {

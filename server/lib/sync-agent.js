@@ -15,6 +15,7 @@ export default class SyncAgent {
   segmentMapper: SegmentMapper;
   client: Client;
   ship: Object;
+  traitMapper: TraitMapper;
 
   synchronizedSegments: Array;
   synchronizedTraits: Array;
@@ -46,7 +47,7 @@ export default class SyncAgent {
    * @return {[type]} [description]
    */
   sync() {
-    return this.segmentMapper.sync(this.segments)
+    return this.segmentMapper.sync(this.segments.filter(segment => _.includes(this.synchronizedSegments, segment.id)))
       .then(() => this.traitMapper.sync(this.synchronizedTraits));
   }
 
@@ -77,7 +78,7 @@ export default class SyncAgent {
     const usersAlreadyAdded = messages.filter((message) => message.user["traits_sendgrid/id"]);
     const usersToAdd = messages.filter((message) => !message.user["traits_sendgrid/id"]);
     const contacts = usersToAdd.map(message => this.userMapper.mapUserToSendgrid(message.user));
-    console.log(contacts);
+
     return this.sendgridClient.request("post", "/contactdb/recipients")
       .send(contacts)
       .then((res) => {

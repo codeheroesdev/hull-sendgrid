@@ -10,11 +10,17 @@ export default function adminHandler(req, res) {
   const { syncAgent } = req.hull.service;
 
   if (syncAgent.isConfigured()) {
-    return res.render("segments.html", {
-      lists: [{ id: 1, name: "test", recipient_count: 100 }],
-      segments: req.hull.segments,
-      synchronizedSegments: [],
-      _
+    const lists = syncAgent.segmentMapper.getObjects().then(response => response.lists.filter(list =>
+      _.includes(syncAgent.segmentMapper.getSyncedListIds(), list.id)
+    ));
+
+    return lists.then(resultList => {
+      res.render("segments.html", {
+        lists: resultList,
+        segments: req.hull.segments,
+        synchronizedSegments: resultList,
+        _
+      });
     });
   }
 

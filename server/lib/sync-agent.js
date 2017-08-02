@@ -55,32 +55,18 @@ export default class SyncAgent {
       });
   }
 
-  // filterMessages(messages: Array<Object>) {
-
-  //   return messages.filter((message) => {
-  //     this.client.logger.asUser(message.user).debug("outoing.user.start", message.user);
-
-  //     // if we are handling batch pass everybody
-  //     if (this.isBatch) {
-  //       return true;
-  //     }
-
-  //     return _.intersectionBy(message.segments, this.synchronizedSegments, "id").length > 0 ||;
-  //   });
-  // }
-
   sendNotifications(messages: Array<Object>) {
     const userDeletionEnabled = this.ship.private_settings.enable_user_deletion;
 
     const usersAlreadyAdded = messages.filter((message) => message.user["traits_sendgrid/id"]);
     const usersToAdd = messages.filter((message) => {
       if (userDeletionEnabled && _.intersectionBy(message.segments, this.synchronizedSegments, "id").length === 0) {
-        this.client.logger.asUser(message.user).info("outgoing.user.skip", { reason: "" });
+        this.client.asUser(message.user).logger.info("outgoing.user.skip", { reason: "" });
         return false;
       }
 
       if (!this.isBatch && _.intersectionBy(message.segments, this.synchronizedSegments, "id").length === 0) {
-        this.client.logger.asUser(message.user).info("outgoing.user.skip", { reason: "" });
+        this.client.asUser(message.user).logger.info("outgoing.user.skip", { reason: "" });
         return false;
       }
       return !message.user["traits_sendgrid/id"];

@@ -94,6 +94,6 @@ describe("Clearbit API errors", function test() {
     });
 
     minihull.batchConnector("123456789012345678901234", "http://localhost:8000/batch")
-    .then(() => {});
+    .then(() => {}).catch(err => console.error(err));
   });
 });

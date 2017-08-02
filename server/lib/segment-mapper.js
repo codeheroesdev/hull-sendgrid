@@ -35,7 +35,7 @@ export default class SegmentMapper {
 
   sync(segments: Array<Object> = []) {
     return this.cache.wrap("lists", () => {
-      return this.sendgridClient.request("get", "/contactdb/lists");
+      return this.sendgridClient.get("/contactdb/lists");
     })
       .then((res) => {
         _.map(res.body.lists, (list) => {

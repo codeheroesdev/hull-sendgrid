@@ -13,12 +13,14 @@ export default class SendgridClient {
   apiKey: string;
   client: Hull;
   metric: Object;
+  bottleneck: Object;
 
-  constructor(ctx: Object) {
+  constructor(ctx: Object, bottleneck: Object) {
     this.apiUrl = process.env.OVERRIDE_SENDGRID_URL || "https://api.sendgrid.com/v3";
     this.apiKey = _.get(ctx.ship, "private_settings.api_key");
     this.client = ctx.client;
     this.metric = ctx.metric;
+    this.bottleneck = bottleneck;
   }
 
   isConfigured() {
@@ -30,41 +32,46 @@ export default class SendgridClient {
    */
   request(method: string, url: string) {
     return superagent[method](url)
-      .use(superagentPrefixPlugin(this.apiUrl))
-      .use(superagentPromisePlugin)
-      .on("request", (reqData) => {
-        this.client.logger.debug("connector.api.request", { method: reqData.method, url: reqData.url });
-      })
-      .on("response", (res) => {
-        const limit = _.get(res.header, "x-ratelimit-limit");
-        const remaining = _.get(res.header, "x-ratelimit-remaining");
-        // const remainingSeconds = moment(_.get(res.header, "x-ratelimit-reset"), "X")
-        //   .diff(moment(), "seconds");
-        // x-runtime
-        this.metric.increment("ship.service_api.call", 1);
-        if (remaining) {
-          this.metric.value("ship.service_api.remaining", remaining);
-        }
+    .use(superagentPrefixPlugin(this.apiUrl))
+    .use(superagentPromisePlugin)
+    .on("request", (reqData) => {
+      this.client.logger.debug("connector.api.request", { method: reqData.method, url: reqData.url });
+    })
+    .on("response", (res) => {
+      const limit = _.get(res.header, "x-ratelimit-limit");
+      const remaining = _.get(res.header, "x-ratelimit-remaining");
+      // const remainingSeconds = moment(_.get(res.header, "x-ratelimit-reset"), "X")
+      //   .diff(moment(), "seconds");
+      // x-runtime
+      this.metric.increment("ship.service_api.call", 1);
+      if (remaining) {
+        this.metric.value("ship.service_api.remaining", remaining);
+      }
 
-        if (limit) {
-          this.metric.value("ship.service_api.limit", limit);
-        }
-      })
-      .set("Authorization", `Bearer ${this.apiKey}`)
-      .set("Content-Type", "application/json");
+      if (limit) {
+        this.metric.value("ship.service_api.limit", limit);
+      }
+    })
+    .set("Authorization", `Bearer ${this.apiKey}`)
+    .set("Content-Type", "application/json");
   }
 
   post(url: string, body: Object) {
-    return this.request("post", url)
-      .send(body);
+    return this.bottleneck.schedule(() => {
+      return this.request("post", url).send(body);
+    });
   }
 
   delete(url: string) {
-    return this.request("delete", url);
+    return this.bottleneck.schedule(() => {
+      return this.request("delete", url);
+    });
   }
 
-  get(url: string) {
-    return this.request("get", url);
+  get(url: string, query: Object = {}) {
+    return this.bottleneck.schedule(() => {
+      return this.request("get", url).query(query);
+    });
   }
 }
 

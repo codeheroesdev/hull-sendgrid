@@ -1,6 +1,6 @@
 import SyncAgent from "./sync-agent";
 
-export default function factoryServiceMiddleware() {
+export default function factoryServiceMiddleware(bottleneckCluster: Object) {
   /**
    * serviceMiddleware injects custom classes to req.hull context object
    * @param  {Request}  req
@@ -11,8 +11,8 @@ export default function factoryServiceMiddleware() {
     if (!req.hull) {
       return next();
     }
-
-    const syncAgent = new SyncAgent(req.hull);
+    const bottleneck = bottleneckCluster.key(req.hull.ship.id);
+    const syncAgent = new SyncAgent(req.hull, bottleneck);
 
     req.hull.service = {
       syncAgent

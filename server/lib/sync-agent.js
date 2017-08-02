@@ -20,13 +20,13 @@ export default class SyncAgent {
   synchronizedSegments: Array<Object>;
   synchronizedTraits: Array<Object>;
 
-  constructor(ctx: Object) {
+  constructor(ctx: Object, bottleneck: Object) {
     this.client = ctx.client;
     this.ship = ctx.ship;
     this.segments = ctx.segments;
     this.isBatch = _.has(ctx.options, "format") && _.has(ctx.options, "url");
 
-    this.sendgridClient = new SendgridClient(ctx);
+    this.sendgridClient = new SendgridClient(ctx, bottleneck);
     this.segmentMapper = new SegmentMapper(ctx, this.sendgridClient);
     this.traitMapper = new TraitMapper(ctx, this.sendgridClient);
     this.userMapper = new UserMapper(ctx);
@@ -87,8 +87,7 @@ export default class SyncAgent {
     });
     const contacts = usersToAdd.map(message => this.userMapper.mapUserToSendgrid(message.user));
 
-    return this.sendgridClient.request("post", "/contactdb/recipients")
-      .send(contacts)
+    return this.sendgridClient.post("/contactdb/recipients", contacts)
       .then((res) => {
         const successEmails = res.body.persisted_recipients.map(recipient => ({ user: { email: Buffer.from(recipient, "base64").toString() } }));
         const successUsers = _.intersectionBy(messages, successEmails, "user.email");
@@ -151,8 +150,7 @@ export default class SyncAgent {
         }, {});
 
         return Promise.all(_.map(operations, (list, listId) => {
-          return this.sendgridClient.request("post", `/contactdb/lists/${listId}/recipients`)
-            .send(list);
+          return this.sendgridClient.post(`/contactdb/lists/${listId}/recipients`, list);
         }));
       })
       .catch((err) => {
@@ -161,17 +159,16 @@ export default class SyncAgent {
   }
 
   fetchRecipients({ page, pageSize }) {
-    return this.sendgridClient.request("get", "/contactdb/recipients")
-      .query({
-        page,
-        page_size: pageSize
-      })
-      .then(res => {
-        return res.body.recipients;
-      })
-      .catch(res => {
-        this.client.logger.error("incoming.job.error", res);
-      });
+    return this.sendgridClient.get("/contactdb/recipients", {
+      page,
+      page_size: pageSize
+    })
+    .then(res => {
+      return res.body.recipients;
+    })
+    .catch(res => {
+      this.client.logger.error("incoming.job.error", res);
+    });
   }
 
   saveRecipient(recipient) {

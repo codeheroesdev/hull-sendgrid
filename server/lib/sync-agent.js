@@ -49,7 +49,10 @@ export default class SyncAgent {
    */
   sync() {
     return this.segmentMapper.sync(this.synchronizedSegments)
-      .then(() => this.traitMapper.sync(this.synchronizedTraits));
+      .then(() => this.traitMapper.sync(this.synchronizedTraits))
+      .catch((err) => {
+        this.client.logger("connector.sync.error", err);
+      });
   }
 
   // filterMessages(messages: Array<Object>) {
@@ -154,6 +157,9 @@ export default class SyncAgent {
               console.log(response.body, response.status);
             });
         }));
+      })
+      .catch((err) => {
+        this.client.logger("outgoing.job.error", err);
       });
   }
 
@@ -167,7 +173,7 @@ export default class SyncAgent {
         return res.body.recipients;
       })
       .catch(res => {
-        console.error(res.status, res.body);
+        this.client.logger("incoming.job.error", res);
       });
   }
 

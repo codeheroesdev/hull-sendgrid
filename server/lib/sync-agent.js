@@ -112,6 +112,9 @@ export default class SyncAgent {
         missingUsers.map(({ user }) => {
           return this.client.asUser(user).logger.error("outgoing.user.error", { errors: "Unknown error" });
         });
+        successUsers.map(({ user }) => {
+          return this.client.asUser(user).logger.info("outgoing.user.success");
+        });
         return successUsers;
       })
       .then((successUsers) => {
@@ -150,7 +153,12 @@ export default class SyncAgent {
         }, {});
 
         return Promise.all(_.map(operations, (list, listId) => {
-          return this.sendgridClient.post(`/contactdb/lists/${listId}/recipients`, list);
+          return this.sendgridClient.post(`/contactdb/lists/${listId}/recipients`, list)
+            .then(() => {
+              _.map(usersToAddToLists, (message) => {
+                this.client.asUser(message.user).logger("outgoing.user.success", { message: "added to list" });
+              });
+            });
         }));
       })
       .catch((err) => {

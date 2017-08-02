@@ -10,11 +10,16 @@ import Context from "../interface/context";
  * @return {Promise}
  */
 export default function userHandler(ctx: Context, messages: Array<Message>) {
-  const isBatch = _.has(ctx.options, "format") && _.has(ctx.options, "url");
   const { syncAgent } = ctx.service;
 
-  // TODO filtering
-  console.log({ isBatch });
-  // const users = messages.map(m => m.user);
-  return syncAgent.sendNotifications(messages);
+  messages = messages.filter((message) => {
+    if (_.get(message, "changes.user['sendgrid/updated_at'][1]")) {
+      ctx.client.logger.info("outgoing.user.skip", { reason: "user was just updated by the connector, avoiding loop" });
+      return false;
+    }
+    return true;
+  });
+
+  return syncAgent.sync()
+    .then(() => syncAgent.sendNotifications(messages));
 }

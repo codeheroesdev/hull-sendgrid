@@ -9,52 +9,42 @@ import { Context } from "../interface";
  * Class which maps Hull traits into appriopriate 3rd party objects list
  */
 export default class TraitMapper {
-  mapping: Object;
-  originalMapping: Object;
+  mapping: Array<string>;
+  originalMapping: Array<string>;
 
   sendgridClient: SendgridClient;
   helpers: Object;
 
-  constructor(ctx: Context, sendgridClient) {
+  constructor(ctx: Context, sendgridClient: Object) {
     this.sendgridClient = sendgridClient;
 
-    this.mapping = _.get(ctx, "ship.private_settings.traits_mapping", []);
+    this.mapping = _.get(ctx, "ship.private_settings.traits_mapping", []) || [];
     this.originalMapping = _.cloneDeep(this.mapping);
     this.helpers = ctx.helpers;
   }
 
   sync(traits: Array<Object> = []) {
-    const newTraits = _.differenceBy(traits, this.mapping, "name");
-    const oldTraits = _.differenceBy(this.mapping, traits, "name");
+    traits = traits.map(t => t.name);
+    const newTraits = _.difference(traits, this.mapping);
 
     return Promise.map(newTraits, trait => {
       return this.createCustomField(trait);
     }, { concurrency: 1 })
-    .then(() => {
-      return Promise.map(oldTraits, trait => {
-        return this.deleteCustomField(trait);
-      }, { concurrency: 3 });
-    })
     .then(() => this.persist());
   }
 
-  createCustomField(trait) {
+  createCustomField(trait: string) {
     return this.sendgridClient.post("/contactdb/custom_fields", {
-      name: trait.name,
+      name: trait,
       type: "text"
-    }).then(res => {
-      this.mapping.push({
-        ...trait,
-        sendgrid_field_id: res.body.id
-      });
+    }).then(() => {
+      this.mapping.push(trait);
+    })
+    .catch((err) => {
+      if (err.response.body.errors[0].message.match("This field name is already in use")) {
+        this.mapping.push(trait);
+      }
     });
-  }
-
-  deleteCustomField(trait) {
-    return this.sendgridClient.delete(`/contactdb/custom_fields/${trait.sendgrid_field_id}`)
-      .then(() => {
-        _.remove(this.mapping, property => property.sendgrid_field_id === trait.sendgrid_field_id);
-      });
   }
 
   persist() {

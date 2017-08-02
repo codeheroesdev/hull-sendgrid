@@ -1,21 +1,10 @@
 // @flow
 import _ from "lodash";
 
-const defaultMapping = [
-  { hull: "sendgrid/email_bouncing", name: "" },
-  { hull: "sendgrid/is_blocked", name: "" },
-  { hull: "sendgrid/last_clicked", name: "" },
-  { hull: "sendgrid/last_opened", name: "" },
-  { hull: "sendgrid/updated_at", name: "" },
-  { hull: "sendgrid/created_at", name: "" },
-  { hull: "sendgrid/invalid_reason", name: "" },
-  { hull: "sendgrid/invalid_at", name: "" }
-];
-
 export default class UserMapper {
-  userMapping: Array;
+  userMapping: Array<Object>;
 
-  constructor(ctx) {
+  constructor(ctx: Object) {
     this.userMapping = _.get(ctx.ship, "private_settings.synchronized_attributes");
   }
 
@@ -27,13 +16,36 @@ export default class UserMapper {
 
   }
 
-  mapUserToSendgrid(user) {
-    return {
+  mapUserToSendgrid(user: Object) {
+    const recipient = {
       email: user.email
     };
+
+    _.reduce(this.userMapping, (acc, field) => {
+      if (_.get(user, field.hull)) {
+        acc[field.name] = _.get(user, field.hull);
+      }
+
+      return acc;
+    }, recipient);
+
+    return recipient;
   }
 
-  mapUserToHull() {
-
+  mapRecipientToHull(recipient: Object) {
+    return {
+      first_name: {
+        operation: "setIfNull",
+        value: recipient.first_name
+      },
+      last_name: {
+        operation: "setIfNull",
+        value: recipient.last_name
+      },
+      "sendgrid/last_clicked": recipient.last_clicked,
+      "sendgrid/last_opened": recipient.last_opened,
+      "sendgrid/updated_at": recipient.updated_at,
+      "sendgrid/created_at": recipient.created_at
+    };
   }
 }

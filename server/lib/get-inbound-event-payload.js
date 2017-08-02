@@ -7,15 +7,15 @@ export default function getInboundEventPayload(message: Object) {
   let createdAt;
 
   try {
-    email = JSON.parse(message.envelope).from
+    email = _.get(JSON.parse(message.envelope), "from");
   } catch (e) {
-    email = null
+    email = null;
   }
 
   try {
     // implement trying to get date from headers
   } catch (e) {
-    date = moment.format("X");
+    createdAt = moment.format("X");
   }
 
   const ident = { email };

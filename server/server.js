@@ -2,7 +2,7 @@ import express from "express";
 import { notifHandler } from "hull/lib/utils";
 import cors from "cors";
 
-import { userHandler, webhookHandler, adminHandler, commandHandler } from "./handler";
+import { userHandler, webhookHandler, adminHandler, commandHandler, fetchAllHandler } from "./handler";
 
 export default function server(app: express) {
   app.use("/notify", notifHandler({
@@ -26,6 +26,8 @@ export default function server(app: express) {
   app.all("/webhook", webhookHandler);
 
   app.get("/admin", adminHandler);
+
+  app.post("/fetch-all", fetchAllHandler);
 
   app.use("/schema/custom_fields", cors(), (req, res) => {
     res.send({

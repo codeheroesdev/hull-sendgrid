@@ -9,8 +9,8 @@ import superagentPromisePlugin from "superagent-promise-plugin";
  * Low level API access client
  */
 export default class SendgridClient {
-  apiUrl: String;
-  apiKey: String;
+  apiUrl: string;
+  apiKey: string;
   client: Hull;
   metric: Object;
 
@@ -28,12 +28,12 @@ export default class SendgridClient {
   /**
    * @return {superagent}
    */
-  request(method, url) {
+  request(method: string, url: string) {
     return superagent[method](url)
       .use(superagentPrefixPlugin(this.apiUrl))
       .use(superagentPromisePlugin)
       .on("request", (reqData) => {
-        this.client.logger.debug("connector.api.request", reqData.method, reqData.url);
+        this.client.logger.debug("connector.api.request", { method: reqData.method, url: reqData.url });
       })
       .on("response", (res) => {
         const limit = _.get(res.header, "x-ratelimit-limit");
@@ -54,12 +54,12 @@ export default class SendgridClient {
       .set("Content-Type", "application/json");
   }
 
-  post(url, body) {
+  post(url: string, body: Object) {
     return this.request("post", url)
       .send(body);
   }
 
-  delete(url) {
+  delete(url: string) {
     return this.request("delete", url);
   }
 }

@@ -1,5 +1,6 @@
 // @flow
 import _ from "lodash";
+import { Request, Response } from "express";
 
 import getEventPayload from "../lib/get-event-payload";
 import getInboundEventPayload from "../lib/get-inbound-event-payload";
@@ -8,12 +9,17 @@ import getInboundEventPayload from "../lib/get-inbound-event-payload";
  * @param  {Request} req
  * @param  {Response} res
  */
-export default function webhookHandler(req, res) {
-
+export default function webhookHandler(req: Request, res: Response) {
   if (_.isObject(req.body) && req.body.from) {
     // we are dealing with inbound parse webhook
+    const { ident, eventName, props, context } = getInboundEventPayload(req.body);
+    req.hull.client.logger.debug("incoming.event.start", req.body);
 
-
+    const asUser = req.hull.client.asUser(ident);
+    return asUser.track(eventName, props, context).then(
+      () => asUser.logger.info("incoming.event.success", { eventName, props, context }),
+      (error) => asUser.logger.error("incoming.event.error", { eventName, props, context, errors: error })
+    );
   }
 
   if (!_.isArray(req.body)) {
@@ -21,7 +27,7 @@ export default function webhookHandler(req, res) {
     res.end("error");
   }
 
-  const promises = _.map(req.body, (message) => {
+  _.map(req.body, (message) => {
     const { ident, eventName, props, context } = getEventPayload(message);
     req.hull.client.logger.debug("incoming.event.start", message);
 
@@ -41,5 +47,5 @@ export default function webhookHandler(req, res) {
     );
   });
 
-  res.end("ok");
+  return res.end("ok");
 }

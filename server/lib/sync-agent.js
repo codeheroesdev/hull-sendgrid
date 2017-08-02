@@ -51,7 +51,7 @@ export default class SyncAgent {
     return this.segmentMapper.sync(this.synchronizedSegments)
       .then(() => this.traitMapper.sync(this.synchronizedTraits))
       .catch((err) => {
-        this.client.logger("connector.sync.error", err);
+        this.client.logger.error("connector.sync.error", err);
       });
   }
 
@@ -152,14 +152,11 @@ export default class SyncAgent {
 
         return Promise.all(_.map(operations, (list, listId) => {
           return this.sendgridClient.request("post", `/contactdb/lists/${listId}/recipients`)
-            .send(list)
-            .then((response) => {
-              console.log(response.body, response.status);
-            });
+            .send(list);
         }));
       })
       .catch((err) => {
-        this.client.logger("outgoing.job.error", err);
+        this.client.logger.error("outgoing.job.error", err);
       });
   }
 
@@ -173,7 +170,7 @@ export default class SyncAgent {
         return res.body.recipients;
       })
       .catch(res => {
-        this.client.logger("incoming.job.error", res);
+        this.client.logger.error("incoming.job.error", res);
       });
   }
 

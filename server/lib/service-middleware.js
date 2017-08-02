@@ -8,7 +8,7 @@ export default function factoryServiceMiddleware(bottleneckCluster: Object) {
    * @param  {Function} next
    */
   return function serviceMiddleware(req, res, next) {
-    if (!req.hull) {
+    if (!req.hull || !req.hull.ship) {
       return next();
     }
     const bottleneck = bottleneckCluster.key(req.hull.ship.id);

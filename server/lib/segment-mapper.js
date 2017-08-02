@@ -27,6 +27,10 @@ export default class SegmentMapper {
     return _.get(this.mapping, segmentId);
   }
 
+  getSyncedListIds() {
+    return Object.values(this.mapping);
+  }
+
   sync(segments: Array<Object> = []) {
     return this.sendgridClient.request("get", "/contactdb/lists")
       .then((res) => {
@@ -51,10 +55,9 @@ export default class SegmentMapper {
   }
 
   createObject(segment: Object) {
-    return this.sendgridClient.request("post", "/contactdb/lists")
-      .send({
-        name: `[Hull] ${segment.name}`
-      })
+    return this.sendgridClient.post("/contactdb/lists", {
+      name: `[Hull] ${segment.name}`
+    })
       .then((res) => {
         this.mapping[segment.id] = res.body.id;
         return res.body.id;
@@ -67,6 +70,12 @@ export default class SegmentMapper {
         //   }
         // }
       });
+  }
+
+  getObjects() {
+    return this.sendgridClient.get("/contactdb/lists").then(res => {
+      return res.body;
+    });
   }
 
   persist() {

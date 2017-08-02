@@ -62,6 +62,10 @@ export default class SendgridClient {
   delete(url: string) {
     return this.request("delete", url);
   }
+
+  get(url) {
+    return this.request("get", url);
+  }
 }
 
 // X-RateLimit-Limit: 500

@@ -15,9 +15,10 @@ export default class SyncAgent {
   segmentMapper: SegmentMapper;
   client: Client;
   ship: Object;
+  traitMapper: TraitMapper;
 
-  synchronizedSegments: Array;
-  synchronizedTraits: Array;
+  synchronizedSegments: Array<Object>;
+  synchronizedTraits: Array<Object>;
 
   constructor(ctx: Object) {
     this.client = ctx.client;
@@ -94,7 +95,7 @@ export default class SyncAgent {
             if (_.intersectionBy(successUsers, [user], "email").length > 0) {
               return false;
             }
-            this.client.asUser(user).logger.error("outoing.user.error", { errors: message });
+            this.client.asUser(user).logger.error("outgoing.user.error", { errors: message });
             if (message.match("The email address you added is invalid")) {
               this.client.asUser(user).traits({
                 "sendgrid/invalid_reason": message,
@@ -107,7 +108,7 @@ export default class SyncAgent {
 
         const missingUsers = _.differenceBy(usersToAdd, _.concat(failedUsers, successUsers), "email");
         missingUsers.map(({ user }) => {
-          return this.client.asUser(user).logger.error("outoing.user.error", { errors: "Unknown error" });
+          return this.client.asUser(user).logger.error("outgoing.user.error", { errors: "Unknown error" });
         });
         return successUsers;
       })

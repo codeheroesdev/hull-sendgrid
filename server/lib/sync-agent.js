@@ -122,11 +122,17 @@ export default class SyncAgent {
           return _.intersectionBy(message.segments, this.synchronizedSegments, "id").length === 0;
         });
         const payload = usersToDelete.map(message => {
-          this.client.asUser(message.user).logger.info("outgoing.user.delete");
           return message.user["traits_sendgrid/id"];
         });
         return this.sendgridClient.delete("/contactdb/recipients", payload)
           .then(() => {
+            _.map(usersToDelete, (message) => {
+              this.client.asUser(message.user).logger.info("outgoing.user.delete");
+              this.client.asUser(message.user).traits({
+                "sendgrid/id": null
+              });
+            });
+
             return usersToAddToLists;
           });
       })

@@ -11,7 +11,7 @@ export default function adminHandler(req, res) {
 
   if (syncAgent.isConfigured()) {
     return res.render("segments.html", {
-      lists: [{ id: 1, name: "test", recipient_count: 100}],
+      lists: [{ id: 1, name: "test", recipient_count: 100 }],
       segments: req.hull.segments,
       synchronizedSegments: [],
       _

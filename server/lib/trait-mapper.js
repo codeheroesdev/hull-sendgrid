@@ -2,6 +2,7 @@
 import _ from "lodash";
 import Promise from "bluebird";
 
+import SendgridClient from "./sendgrid-client";
 import { Context } from "../interface";
 
 /**
@@ -11,7 +12,7 @@ export default class TraitMapper {
   mapping: Object;
   originalMapping: Object;
 
-  sendgridClient: Object;
+  sendgridClient: SendgridClient;
   helpers: Object;
 
   constructor(ctx: Context, sendgridClient) {
@@ -23,27 +24,37 @@ export default class TraitMapper {
   }
 
   sync(traits: Array<Object> = []) {
-    const traitsAlreadyMapped = this.mapping.map(id => ({ id }));
-    const newTraits = _.differenceBy(traits, traitsAlreadyMapped, "id");
-    const oldTraits = _.differenceBy(traitsAlreadyMapped, traits, "id");
+    const newTraits = _.differenceBy(traits, this.mapping, "name");
+    const oldTraits = _.differenceBy(this.mapping, traits, "name");
 
     return Promise.map(newTraits, trait => {
-      return this.createObject(trait);
+      return this.createCustomField(trait);
     }, { concurrency: 1 })
     .then(() => {
       return Promise.map(oldTraits, trait => {
-        return this.deleteObject(trait);
+        return this.deleteCustomField(trait);
       }, { concurrency: 3 });
     })
     .then(() => this.persist());
   }
 
-  createObject(trait) {
-    return this.sendgridClient.post("/");
+  createCustomField(trait) {
+    return this.sendgridClient.post("/contactdb/custom_fields", {
+      name: trait.name,
+      type: "text"
+    }).then(res => {
+      this.mapping.push({
+        ...trait,
+        sendgrid_field_id: res.body.id
+      });
+    });
   }
 
-  deleteObject(trait) {
-    return this.sendgridClient.delete("/");
+  deleteCustomField(trait) {
+    return this.sendgridClient.delete(`/contactdb/custom_fields/${trait.sendgrid_field_id}`)
+      .then(() => {
+        _.remove(this.mapping, property => property.sendgrid_field_id === trait.sendgrid_field_id);
+      });
   }
 
   persist() {

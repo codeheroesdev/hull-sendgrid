@@ -50,9 +50,33 @@
     {
       "name": "synchronized_attributes",
       "title": "Send Attributes to Sendgrid",
-      "description": "See documentation for default attribtues list",
+      "description": "See documentation for default attributes list",
       "type": "array",
-      "format": "trait"
+      "format": "table",
+      "items": {
+        "type": "object",
+        "properties": {
+          "hull": {
+            "title": "Hull Field ID",
+            "type": "string",
+            "format": "trait",
+            "options": {
+              "placeholder": "Enter a Hull field id",
+              "allowCreate": true,
+              "source": "sendgrid"
+            }
+          },
+          "name": {
+            "title": "Sendgrid Field ID",
+            "type": "string",
+            "format": "select",
+            "options" : {
+              "allowCreate": false,
+              "loadOptions" : "/schema/custom_fields"
+            }
+          }
+        }
+      }
     }
   ],
   "resources": [],

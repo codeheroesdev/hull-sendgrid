@@ -51,12 +51,15 @@
     "babel-register": "^6.9.0",
     "bluebird": "^3.4.1",
     "bottleneck": "^1.16.0",
+    "cors": "^2.8.4",
     "express": "^4.15.3",
     "hull": "0.12.2",
     "lodash": "^4.13.1",
     "moment": "2.18.1",
     "rimraf": "^2.6.1",
-    "superagent-prefix": "^0.0.2"
+    "superagent": "3.5.2",
+    "superagent-prefix": "^0.0.2",
+    "superagent-promise-plugin": "3.2.0"
   },
   "devDependencies": {
     "assert": "^1.4.1",

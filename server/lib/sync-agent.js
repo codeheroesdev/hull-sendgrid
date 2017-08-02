@@ -29,8 +29,8 @@ export default class SyncAgent {
     this.traitMapper = new TraitMapper(ctx, this.sendgridClient);
     this.userMapper = new UserMapper(ctx);
 
-    this.synchronizedSegments = ctx.ship.private_settings.synchronized_segments;
-    this.synchronizedTraits = ctx.ship.private_settings.synchronized_attributes;
+    this.synchronizedSegments = _.get(ctx, "ship.private_settings.synchronized_segments");
+    this.synchronizedTraits = _.get(ctx, "ship.private_settings.synchronized_attributes");
   }
 
   /**
@@ -69,6 +69,10 @@ export default class SyncAgent {
    * @param  {Array<Object>} users
    * @return {Promise}
    */
+  sendUsers(users: Array<Object>) {
+
+  }
+
   sendNotifications(messages: Array<Object>) {
     const usersAlreadyAdded = messages.filter((message) => message.user["traits_sendgrid/id"]);
     const usersToAdd = messages.filter((message) => !message.user["traits_sendgrid/id"]);
@@ -79,11 +83,11 @@ export default class SyncAgent {
       .then((res) => {
         const successEmails = res.body.persisted_recipients.map(recipient => ({ user: { email: Buffer.from(recipient, "base64").toString() } }));
         const successUsers = _.intersectionBy(messages, successEmails, "user.email");
-        const failedUsers = _.flatten(res.body.errors.map(({ error_indices,  message }) => {
+        const failedUsers = _.flatten(res.body.errors.map(({ error_indices, message }) => {
           const usersWithError = this._intersectionIndex(usersToAdd, error_indices);
           return usersWithError.filter(({ user }) => {
             if (_.intersectionBy(successUsers, [user], "email").length > 0) {
-              return false
+              return false;
             }
             this.client.asUser(user).logger.error("outoing.user.error", { errors: message });
             return true;

@@ -9,6 +9,7 @@ import _ from "lodash";
 export default function adminHandler(req, res) {
   const { syncAgent } = req.hull.service;
   console.log(req.hull.token);
+
   if (syncAgent.isConfigured()) {
     const segmentsFromSendgrid = syncAgent.segmentMapper.getObjects().then(response => response.lists.filter(list =>
       _.includes(syncAgent.segmentMapper.getSyncedListIds(), list.id)

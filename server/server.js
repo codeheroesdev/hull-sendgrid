@@ -31,10 +31,12 @@ export default function server(app: express) {
 
   app.use("/schema/custom_fields", cors(), (req, res) => {
     res.send({
-      options: [
-        { value: "sendgrid_id2", label: "sendgrid_id2" },
-        { value: "email2", label: "email2" }
-      ]
+      options: req.hull.ship.private_settings.traits_mapping.map(name => {
+        return {
+          label: name,
+          value: name
+        };
+      })
     });
   });
 

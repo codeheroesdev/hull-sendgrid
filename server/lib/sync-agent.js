@@ -159,7 +159,8 @@ export default class SyncAgent {
             })
             .catch((err) => {
               _.map(usersToAddToLists, (message) => {
-                this.client.asUser(message.user).logger.error("outgoing.user.error", { message: err.message });
+                // may detect `Recipient IDs provided were not valid` and try to clean the `traits_sendgrid/id`
+                this.client.asUser(message.user).logger.error("outgoing.user.error", { message: err.body });
               });
             });
         }));

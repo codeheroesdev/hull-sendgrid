@@ -10,13 +10,13 @@ export default function adminHandler(req, res) {
   const { syncAgent } = req.hull.service;
   console.log(req.hull.token);
   if (syncAgent.isConfigured()) {
-    const lists = syncAgent.segmentMapper.getObjects().then(response => response.lists.filter(list =>
+    const segmentsFromSendgrid = syncAgent.segmentMapper.getObjects().then(response => response.lists.filter(list =>
       _.includes(syncAgent.segmentMapper.getSyncedListIds(), list.id)
     ));
 
-    return lists.then(resultList => {
+    return segmentsFromSendgrid.then(resultList => {
       res.render("segments.html", {
-        lists: resultList,
+        segmentsFromSendgrid: resultList,
         segments: req.hull.segments,
         synchronizedSegments: resultList,
         _

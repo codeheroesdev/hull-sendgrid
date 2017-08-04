@@ -167,7 +167,7 @@ export default class SyncAgent {
               _.map(usersToAddToLists, (message) => {
                 // may detect `Recipient IDs provided were not valid` and try to clean the `traits_sendgrid/id`
                 const asUser = this.client.asUser(message.user);
-                if (!err.body.match("Recipient IDs provided were not valid")) {
+                if (err.body.match("Recipient IDs provided were not valid")) {
                   asUser.logger.error("outgoing.user.error", { message: err.body });
                   return asUser.traits({ "sendgrid/id": null });
                 }

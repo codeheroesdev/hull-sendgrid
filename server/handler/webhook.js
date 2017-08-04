@@ -47,9 +47,9 @@ export default function webhookHandler(req: Request, res: Response) {
     ).then(() => {
       if (message.event === "bounce") {
         if (message.type === "blocked") {
-          return asUser.traits({ "sendgrid/email_bounced_at": new Date(), "sendgrid/email_blocked_at": new Date() }, { source: "sendgrid" });
+          return asUser.traits({ email_bounced_at: new Date(), email_blocked_at: new Date() }, { source: "sendgrid" });
         }
-        return asUser.traits({ "sendgrid/email_bounced_at": new Date() }, { source: "sendgrid" });
+        return asUser.traits({ email_bounced_at: new Date() }, { source: "sendgrid" });
       }
       return true;
     });

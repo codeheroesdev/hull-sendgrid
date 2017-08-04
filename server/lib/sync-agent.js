@@ -1,6 +1,8 @@
+/* @flow */
 import _ from "lodash";
 import Promise from "bluebird";
 import { Client } from "hull";
+import { Cluster } from "bottleneck";
 
 import SendgridClient from "./sendgrid-client";
 import SegmentMapper from "./segment-mapper";
@@ -11,20 +13,24 @@ import UserMapper from "./user-mapper";
  * SyncAgent performs logic
  */
 export default class SyncAgent {
-  sendgridClient: SendgridClient;
-  segmentMapper: SegmentMapper;
   client: Client;
   ship: Object;
+  segments: Array<Object>;
+  isBatch: boolean;
+
+  sendgridClient: SendgridClient;
+  segmentMapper: SegmentMapper;
   traitMapper: TraitMapper;
+  userMapper: UserMapper;
 
   synchronizedSegments: Array<Object>;
   synchronizedTraits: Array<Object>;
 
-  constructor(ctx: Object, bottleneck: Object) {
+  constructor(ctx: Object, bottleneck: Cluster) {
     this.client = ctx.client;
     this.ship = ctx.ship;
     this.segments = ctx.segments;
-    this.isBatch = _.has(ctx.options, "format") && _.has(ctx.options, "url");
+    this.isBatch = _.has(ctx, "options.format") && _.has(ctx, "options.url");
 
     this.sendgridClient = new SendgridClient(ctx, bottleneck);
     this.segmentMapper = new SegmentMapper(ctx, this.sendgridClient);
@@ -56,7 +62,7 @@ export default class SyncAgent {
   }
 
   sendNotifications(messages: Array<Object>) {
-    const userDeletionEnabled = this.ship.private_settings.enable_user_deletion;
+    const userDeletionEnabled = _.get(this.ship, "private_settings.enable_user_deletion", false);
 
     const usersAlreadyAdded = messages.filter((message) => message.user["traits_sendgrid/id"]);
     const usersToAdd = messages.filter((message) => {
@@ -160,7 +166,12 @@ export default class SyncAgent {
             .catch((err) => {
               _.map(usersToAddToLists, (message) => {
                 // may detect `Recipient IDs provided were not valid` and try to clean the `traits_sendgrid/id`
-                this.client.asUser(message.user).logger.error("outgoing.user.error", { message: err.body });
+                const asUser = this.client.asUser(message.user);
+                if (err.body.match("Recipient IDs provided were not valid")) {
+                  asUser.logger.error("outgoing.user.error", { message: err.body });
+                  return asUser.traits({ "sendgrid/id": null });
+                }
+                return asUser.logger.error("outgoing.user.error", { message: err.body });
               });
             });
         }));
@@ -170,7 +181,7 @@ export default class SyncAgent {
       });
   }
 
-  fetchRecipients({ page, pageSize }) {
+  fetchRecipients({ page, pageSize }: Object) {
     return this.sendgridClient.get("/contactdb/recipients", {
       page,
       page_size: pageSize
@@ -183,7 +194,7 @@ export default class SyncAgent {
     });
   }
 
-  saveRecipient(recipient) {
+  saveRecipient(recipient: Object) {
     const asUser = this.client.asUser({ email: recipient.email, anonymous_id: `sendgrid:${recipient.id}` });
     return asUser.traits(this.userMapper.mapRecipientToHull(recipient))
     .then(() => {
@@ -194,11 +205,11 @@ export default class SyncAgent {
     });
   }
 
-  _encodeBase64(string) {
-    return Buffer.from(string).toString("base64");
+  _encodeBase64(value: string) {
+    return Buffer.from(value).toString("base64");
   }
 
-  _intersectionIndex(array, indices) {
+  _intersectionIndex(array: Array<Object>, indices: Array<any>) {
     return indices.map(i => array[i]);
   }
 }

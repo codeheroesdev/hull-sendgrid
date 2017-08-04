@@ -1,6 +1,7 @@
 import express from "express";
 import { notifHandler } from "hull/lib/utils";
 import cors from "cors";
+import _ from "lodash";
 
 import { userHandler, webhookHandler, adminHandler, commandHandler, fetchAllHandler } from "./handler";
 
@@ -31,7 +32,7 @@ export default function server(app: express) {
 
   app.use("/schema/custom_fields", cors(), (req, res) => {
     res.send({
-      options: req.hull.ship.private_settings.traits_mapping.map(name => {
+      options: _.get(req, "hull.ship.private_settings.traits_mapping", []).map(name => {
         return {
           label: name,
           value: name

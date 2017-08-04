@@ -1,6 +1,7 @@
 import SyncAgent from "./sync-agent";
+import { Cluster } from "bottleneck";
 
-export default function factoryServiceMiddleware(bottleneckCluster: Object) {
+export default function factoryServiceMiddleware(bottleneckCluster: Cluster) {
   /**
    * serviceMiddleware injects custom classes to req.hull context object
    * @param  {Request}  req

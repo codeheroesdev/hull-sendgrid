@@ -1,6 +1,7 @@
+/* global describe, it, beforeEach, afterEach */
+
 const Minihull = require("minihull");
 const expect = require("chai").expect;
-const moment = require("moment");
 const nock = require("nock");
 
 const bootstrap = require("./support/bootstrap");
@@ -63,7 +64,7 @@ describe("Clearbit API errors", function test() {
       .reply(200, {
         lists: [{
           id: 1708197,
-          name: '[Hull] Segment List',
+          name: "[Hull] Segment List",
           recipient_count: 0
         }]
       });

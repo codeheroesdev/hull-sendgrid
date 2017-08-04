@@ -1,4 +1,4 @@
 /* global describe, it */
-describe("Unit tests", function webhookTests() {
+describe("Unit tests", () => {
   it("should pass", () => {});
 });

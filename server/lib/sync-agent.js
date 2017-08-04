@@ -30,7 +30,7 @@ export default class SyncAgent {
     this.client = ctx.client;
     this.ship = ctx.ship;
     this.segments = ctx.segments;
-    this.isBatch = _.has(ctx.options, "format") && _.has(ctx.options, "url");
+    this.isBatch = _.has(ctx, "options.format") && _.has(ctx, "options.url");
 
     this.sendgridClient = new SendgridClient(ctx, bottleneck);
     this.segmentMapper = new SegmentMapper(ctx, this.sendgridClient);
@@ -62,7 +62,7 @@ export default class SyncAgent {
   }
 
   sendNotifications(messages: Array<Object>) {
-    const userDeletionEnabled = this.ship.private_settings.enable_user_deletion;
+    const userDeletionEnabled = _.get(this.ship, "private_settings.enable_user_deletion", false);
 
     const usersAlreadyAdded = messages.filter((message) => message.user["traits_sendgrid/id"]);
     const usersToAdd = messages.filter((message) => {

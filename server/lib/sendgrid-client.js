@@ -5,6 +5,7 @@ import Promise from "bluebird";
 import superagent from "superagent";
 import superagentPrefixPlugin from "superagent-prefix";
 import superagentPromisePlugin from "superagent-promise-plugin";
+import { Cluster } from "bottleneck";
 
 class FilteredError extends Error {
   req: Object;
@@ -20,9 +21,9 @@ export default class SendgridClient {
   apiKey: string;
   client: Hull;
   metric: Object;
-  bottleneck: Object;
+  bottleneck: Cluster;
 
-  constructor(ctx: Object, bottleneck: Object) {
+  constructor(ctx: Object, bottleneck: Cluster) {
     this.apiUrl = process.env.OVERRIDE_SENDGRID_URL || "https://api.sendgrid.com/v3";
     this.apiKey = _.get(ctx.ship, "private_settings.api_key");
     this.client = ctx.client;
@@ -63,14 +64,14 @@ export default class SendgridClient {
     .set("Content-Type", "application/json");
   }
 
-  post(url: string, body: Object) {
+  post(url: string, body: any) {
     return this.bottleneck.schedule(() => {
       return this.request("post", url).send(body)
         .catch(err => this.handleError(err));
     });
   }
 
-  delete(url: string, body: Object = {}) {
+  delete(url: string, body: any = {}) {
     return this.bottleneck.schedule(() => {
       return this.request("delete", url).send(body)
         .catch(err => this.handleError(err));

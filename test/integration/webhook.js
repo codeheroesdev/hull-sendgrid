@@ -7,7 +7,7 @@ import assert from "assert";
 
 const bootstrap = require("./support/bootstrap");
 
-describe("Connector for /webhook endpoint", () => {
+describe("Connector for /webhook endpoint", function webhookTests() {
   this.timeout(3000);
   let server;
   let minihull;

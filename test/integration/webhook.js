@@ -59,8 +59,10 @@ describe("Connector for /webhook endpoint", function webhookTests() {
       tls: 1,
       asm_group_id: 3051,
       type: "blocked"
-    }]
-    );
+    }]);
+
+    let firstCheck = false;
+    let secondCheck = false;
 
     minihull.on("incoming.request", req => {
       const batch = req.body.batch[0];
@@ -72,14 +74,20 @@ describe("Connector for /webhook endpoint", function webhookTests() {
         assert.equal(eventData.event_type, "email");
         assert.equal(eventData.properties.campaign_name[0], "campaign");
         assert.equal(eventData.event, "Email Bounced");
+        firstCheck = true;
       } else if (batch.type === "traits") {
-        assert(eventData["sendgrid/email_bouncing"]);
-        assert(eventData["sendgrid/is_blocked"]);
+        assert(eventData["sendgrid/email_bounced_at"]);
+        assert(eventData["sendgrid/email_blocked_at"]);
+        secondCheck = true;
       }
     });
 
     setTimeout(() => {
-      done();
+      if (!firstCheck) {
+        done(Error("first check not satisfied"));
+      } else if (!secondCheck) {
+        done(Error("second check not satisfied"));
+      } else done();
     }, 2500);
   });
 
@@ -103,6 +111,9 @@ describe("Connector for /webhook endpoint", function webhookTests() {
     }]
     );
 
+    let firstCheck = false;
+    let secondCheck = false;
+
     minihull.on("incoming.request", req => {
       const batch = req.body.batch[0];
       const eventData = batch.body;
@@ -113,13 +124,19 @@ describe("Connector for /webhook endpoint", function webhookTests() {
         assert.equal(eventData.event_type, "email");
         assert.equal(eventData.properties.campaign_name[0], "campaign");
         assert.equal(eventData.event, "Email Bounced");
+        firstCheck = true;
       } else if (batch.type === "traits") {
-        assert(eventData["sendgrid/email_bouncing"]);
+        assert(eventData["sendgrid/email_bounced_at"]);
+        secondCheck = true;
       }
     });
 
     setTimeout(() => {
-      done();
+      if (!firstCheck) {
+        done(Error("first check not satisfied"));
+      } else if (!secondCheck) {
+        done(Error("second check not satisfied"));
+      } else done();
     }, 2500);
   });
 
@@ -145,6 +162,7 @@ describe("Connector for /webhook endpoint", function webhookTests() {
     }]
     );
 
+    let check = false;
     minihull.on("incoming.request", req => {
       const batch = req.body.batch[0];
       const eventData = batch.body;
@@ -156,13 +174,16 @@ describe("Connector for /webhook endpoint", function webhookTests() {
         assert.equal(eventData.properties.campaign_name[0], "category1");
         assert.equal(eventData.properties.campaign_name[1], "category2");
         assert.equal(eventData.event, "Email Delivered");
+        check = true;
       } else if (batch.type === "traits") {
         done(Error("Received traits request that should not happen because it is not bounce event"));
       }
     });
 
     setTimeout(() => {
-      done();
+      if (!check) {
+        done(Error("Check not satisfied"));
+      } else done();
     }, 2500);
   });
 

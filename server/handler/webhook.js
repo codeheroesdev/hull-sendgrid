@@ -44,7 +44,15 @@ export default function webhookHandler(req: Request, res: Response) {
     return asUser.track(eventName, props, context).then(
       () => asUser.logger.info("incoming.event.success", { eventName, props, context }),
       (error) => asUser.logger.error("incoming.event.error", { eventName, props, context, errors: error })
-    );
+    ).then(() => {
+      if (message.event === "bounce") {
+        if (message.type === "blocked") {
+          return asUser.traits({ "sendgrid/email_bouncing": new Date(), "sendgrid/is_blocked": new Date() });
+        }
+        return asUser.traits({ "sendgrid/email_bouncing": new Date() });
+      }
+      return true;
+    });
   });
 
   return res.end("ok");

@@ -6,7 +6,7 @@ const nock = require("nock");
 
 const bootstrap = require("./support/bootstrap");
 
-describe("Clearbit API errors", function test() {
+describe("Connector for errors from Sendgrid API", function test() {
   this.timeout(10000);
   let server, minihull;
   beforeEach((done) => {
@@ -33,7 +33,7 @@ describe("Clearbit API errors", function test() {
     server.close();
   });
 
-  it("handle user errors", (done) => {
+  it("should handle user errors", (done) => {
     minihull.stubBatch([{
       id: "123",
       email: "a0@foo.bar",

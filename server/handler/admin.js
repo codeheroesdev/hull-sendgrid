@@ -2,6 +2,8 @@
 import _ from "lodash";
 import { Request, Response } from "express";
 
+import { encrypt } from "../lib/crypto";
+
 /**
  * Handler responsible for service Admin dashboard
  * @param  {Request} req
@@ -15,10 +17,13 @@ export default function adminHandler(req: Request, res: Response) {
       _.includes(syncAgent.segmentMapper.getSyncedListIds(), list.id)
     ));
 
+    const conf = encrypt(req.hull.config, process.env.SECRET || "1234");
+
     return segmentsFromSendgrid.then(resultList => {
       res.render("segments.html", {
         segmentsFromSendgrid: resultList,
         _,
+        conf,
         hostname: req.hull.hostname,
         token: req.hull.token
       });

@@ -19,7 +19,10 @@ export default function webhookHandler(req: Request, res: Response) {
     return asUser.track(eventName, props, context).then(
       () => asUser.logger.info("incoming.event.success", { eventName, props, context }),
       (error) => asUser.logger.error("incoming.event.error", { eventName, props, context, errors: error })
-    );
+    )
+    .then(() => {
+      res.end("ok");
+    });
   }
 
   if (!_.isArray(req.body)) {

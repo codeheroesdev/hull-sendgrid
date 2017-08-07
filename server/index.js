@@ -1,6 +1,7 @@
 import express from "express";
 import Hull from "hull";
 import { Cluster } from "bottleneck";
+import { middleware } from "./lib/crypto";
 
 import server from "./server";
 import serviceMiddleware from "./lib/service-middleware";
@@ -15,6 +16,8 @@ const connector = new Hull.Connector({
   port: process.env.PORT || 8082,
 });
 const bottleneckCluster = new Cluster(1, 2000);
+
+app.use(middleware(connector.hostSecret));
 
 connector.use(serviceMiddleware(bottleneckCluster));
 connector.setupApp(app);

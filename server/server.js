@@ -2,6 +2,8 @@ import express from "express";
 import { notifHandler } from "hull/lib/utils";
 import cors from "cors";
 import _ from "lodash";
+import multer from "multer";
+const upload = multer();
 
 import { userHandler, webhookHandler, adminHandler, commandHandler, fetchAllHandler } from "./handler";
 
@@ -24,7 +26,7 @@ export default function server(app: express) {
     res.end("ok");
   });
 
-  app.all("/webhook", webhookHandler);
+  app.all("/webhook", upload.array(), webhookHandler);
 
   app.get("/admin", adminHandler);
 

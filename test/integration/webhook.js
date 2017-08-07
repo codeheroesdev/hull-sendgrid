@@ -76,8 +76,7 @@ describe("Connector for /webhook endpoint", function webhookTests() {
         assert.equal(eventData.event, "Email Bounced");
         firstCheck = true;
       } else if (batch.type === "traits") {
-        assert(eventData["sendgrid/email_bounced_at"]);
-        assert(eventData["sendgrid/email_blocked_at"]);
+        assert.equal(eventData["sendgrid/email_blocked_at"], 1501852843);
         secondCheck = true;
       }
     });
@@ -126,7 +125,7 @@ describe("Connector for /webhook endpoint", function webhookTests() {
         assert.equal(eventData.event, "Email Bounced");
         firstCheck = true;
       } else if (batch.type === "traits") {
-        assert(eventData["sendgrid/email_bounced_at"]);
+        assert.equal(eventData["sendgrid/email_bounced_at"], 1501852843);
         secondCheck = true;
       }
     });

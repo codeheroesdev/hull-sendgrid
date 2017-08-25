@@ -1,5 +1,4 @@
 // @flow
-
 export default class Message {
   user: Object;
   changes: Object;

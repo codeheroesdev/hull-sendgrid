@@ -1,5 +1,4 @@
 // @flow
-
 export default class Context {
   config: Object;
   token: String;
